@@ -1,0 +1,22 @@
+backend start:
+cd "E:\bank account opening\backend"
+npm install
+
+cd "E:\bank account opening\backend"
+npm start
+
+frontend:
+cd "E:\bank account opening\flutter_frontend"
+flutter clean
+flutter pub get
+flutter run -d R5GYB4XBNAP
+
+Admin:
+http://localhost:4000/admin/
+username: admin
+pass: ChangeMeImmediately123!
+ADMIN
+
+ORACLE_USER=INVESTOR_APP
+ORACLE_PASSWORD=InvestorApp123
+ORACLE_CONNECT_STRING=localhost:1521/FREEPDB1

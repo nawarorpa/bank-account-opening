@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: investor-bank-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: investor_bank
+      POSTGRES_USER: bankapp
+      POSTGRES_PASSWORD: bankapp
+    ports:
+      - "5432:5432"
+    volumes:
+      - investor_bank_pgdata:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+
+volumes:
+  investor_bank_pgdata:

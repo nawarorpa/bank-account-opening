@@ -1,0 +1,10 @@
+backend/node_modules/
+backend/.env
+backend/uploads/
+.DS_Store
+.idea/
+.vscode/
+flutter_frontend/.dart_tool/
+flutter_frontend/build/
+flutter_frontend/.flutter-plugins
+flutter_frontend/.flutter-plugins-dependencies

@@ -1,0 +1,275 @@
+SELECT USER FROM dual;CREATE TABLE APPLICATIONS (
+    APPLICATION_ID VARCHAR2(36) PRIMARY KEY,
+    STATUS         VARCHAR2(30) DEFAULT 'SUBMITTED' NOT NULL,
+    PAYLOAD        CLOB NOT NULL,
+    CREATED_AT     TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+    UPDATED_AT     TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL
+);
+CREATE TABLE DOCUMENTS (
+    DOCUMENT_ID    VARCHAR2(36) PRIMARY KEY,
+    APPLICATION_ID VARCHAR2(36) NOT NULL,
+    DOCUMENT_TYPE  VARCHAR2(100) NOT NULL,
+    ORIGINAL_NAME  VARCHAR2(255),
+    STORED_NAME    VARCHAR2(255),
+    MIME_TYPE      VARCHAR2(100),
+    FILE_SIZE      NUMBER,
+    FILE_PATH      VARCHAR2(1000),
+    CREATED_AT     TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+    CONSTRAINT FK_DOCUMENT_APPLICATION
+        FOREIGN KEY (APPLICATION_ID)
+        REFERENCES APPLICATIONS(APPLICATION_ID)
+);
+
+CREATE TABLE APPLICATION_AUDIT_LOG (
+    AUDIT_ID       VARCHAR2(36) PRIMARY KEY,
+    APPLICATION_ID VARCHAR2(36) NOT NULL,
+    ACTOR_TYPE     VARCHAR2(20) NOT NULL,
+    ACTOR_USERNAME VARCHAR2(100),
+    ACTION         VARCHAR2(50) NOT NULL,
+    FROM_STATUS    VARCHAR2(30),
+    TO_STATUS      VARCHAR2(30),
+    NOTE           VARCHAR2(2000),
+    CREATED_AT     TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+    CONSTRAINT FK_AUDIT_APPLICATION
+        FOREIGN KEY (APPLICATION_ID)
+        REFERENCES APPLICATIONS(APPLICATION_ID)
+);
+SELECT table_name
+FROM user_tables
+ORDER BY table_name;
+SELECT column_name, data_type, data_length, nullable
+FROM user_tab_columns
+WHERE table_name = 'APPLICATIONS'
+ORDER BY column_id;
+SELECT column_name, data_type, data_length, nullable
+FROM user_tab_columns
+WHERE table_name = 'DOCUMENTS'
+ORDER BY column_id;
+SELECT column_name, data_type, data_length, nullable
+FROM user_tab_columns
+WHERE table_name = 'APPLICATIONS'
+ORDER BY column_id;
+SELECT column_name, data_type, data_length, nullable
+FROM user_tab_columns
+WHERE table_name = 'DOCUMENTS'
+ORDER BY column_id;
+SET SERVEROUTPUT ON;
+
+DECLARE
+  v_count NUMBER;
+
+  PROCEDURE add_column(
+    p_table VARCHAR2,
+    p_column VARCHAR2,
+    p_definition VARCHAR2
+  ) IS
+    v_column_count NUMBER;
+  BEGIN
+    SELECT COUNT(*)
+    INTO v_column_count
+    FROM user_tab_columns
+    WHERE table_name = UPPER(p_table)
+      AND column_name = UPPER(p_column);
+
+    IF v_column_count = 0 THEN
+      EXECUTE IMMEDIATE
+        'ALTER TABLE ' || p_table ||
+        ' ADD (' || p_column || ' ' || p_definition || ')';
+
+      DBMS_OUTPUT.PUT_LINE('Added ' || p_table || '.' || p_column);
+    ELSE
+      DBMS_OUTPUT.PUT_LINE(
+        'Already exists: ' || p_table || '.' || p_column
+      );
+    END IF;
+  END;
+BEGIN
+  add_column(
+    'APPLICATIONS',
+    'APPLICATION_NUMBER',
+    'VARCHAR2(30)'
+  );
+
+  add_column(
+    'APPLICATIONS',
+    'SUBMITTED_AT',
+    'TIMESTAMP WITH TIME ZONE'
+  );
+
+  add_column(
+    'APPLICATIONS',
+    'REVIEWED_AT',
+    'TIMESTAMP WITH TIME ZONE'
+  );
+
+  add_column(
+    'APPLICATIONS',
+    'REVIEWED_BY',
+    'VARCHAR2(100)'
+  );
+
+  add_column(
+    'APPLICATIONS',
+    'REVIEW_NOTE',
+    'VARCHAR2(2000)'
+  );
+
+  add_column(
+    'DOCUMENTS',
+    'SIZE_BYTES',
+    'NUMBER'
+  );
+END;
+/
+
+UPDATE APPLICATIONS
+SET APPLICATION_NUMBER =
+    'LEGACY-' || SUBSTR(APPLICATION_ID, 1, 12)
+WHERE APPLICATION_NUMBER IS NULL;
+
+COMMIT;
+
+DECLARE
+  v_exists NUMBER;
+BEGIN
+  SELECT COUNT(*)
+  INTO v_exists
+  FROM user_constraints
+  WHERE table_name = 'APPLICATIONS'
+    AND constraint_name = 'UK_APPLICATION_NUMBER';
+
+  IF v_exists = 0 THEN
+    EXECUTE IMMEDIATE
+      'ALTER TABLE APPLICATIONS ADD CONSTRAINT UK_APPLICATION_NUMBER UNIQUE (APPLICATION_NUMBER)';
+  END IF;
+END;
+/
+
+ALTER TABLE APPLICATIONS
+MODIFY APPLICATION_NUMBER VARCHAR2(30) NOT NULL;
+
+DECLARE
+  v_count NUMBER;
+BEGIN
+  SELECT COUNT(*)
+  INTO v_count
+  FROM user_tables
+  WHERE table_name = 'APPLICATION_AUDIT_LOG';
+
+  IF v_count = 0 THEN
+
+    EXECUTE IMMEDIATE q'[
+      CREATE TABLE APPLICATION_AUDIT_LOG (
+        AUDIT_ID       VARCHAR2(36) PRIMARY KEY,
+        APPLICATION_ID VARCHAR2(36) NOT NULL,
+        ACTOR_TYPE     VARCHAR2(20) NOT NULL,
+        ACTOR_USERNAME VARCHAR2(100),
+        ACTION         VARCHAR2(50) NOT NULL,
+        FROM_STATUS    VARCHAR2(30),
+        TO_STATUS      VARCHAR2(30),
+        NOTE           VARCHAR2(2000),
+        CREATED_AT     TIMESTAMP WITH TIME ZONE
+                       DEFAULT SYSTIMESTAMP NOT NULL,
+
+        CONSTRAINT FK_AUDIT_APPLICATION
+          FOREIGN KEY (APPLICATION_ID)
+          REFERENCES APPLICATIONS(APPLICATION_ID)
+      )
+    ]';
+
+    DBMS_OUTPUT.PUT_LINE('Created APPLICATION_AUDIT_LOG');
+  END IF;
+END;
+/
+
+COMMIT;
+
+SELECT table_name
+FROM user_tables
+ORDER BY table_name;
+SELECT column_name
+FROM user_tab_columns
+WHERE table_name = 'APPLICATIONS'
+ORDER BY column_id;
+SELECT column_name
+FROM user_tab_columns
+WHERE table_name = 'DOCUMENTS'
+ORDER BY column_id;
+SELECT
+    application_id,
+    application_number,
+    status,
+    created_at,
+    updated_at
+FROM applications
+ORDER BY created_at DESC;
+SELECT
+    document_id,
+    application_id,
+    document_type,
+    original_name,
+    stored_name,
+    mime_type,
+    file_size,
+    file_path,
+    created_at
+FROM documents
+WHERE application_id = 'YOUR_APPLICATION_ID'
+ORDER BY created_at;
+SELECT
+    audit_id,
+    application_id,
+    actor_type,
+    actor_username,
+    action,
+    from_status,
+    to_status,
+    note,
+    created_at
+FROM application_audit_log
+WHERE application_id = 'YOUR_APPLICATION_ID'
+ORDER BY created_at;
+SELECT
+    audit_id,
+    application_id,
+    actor_type,
+    actor_username,
+    action,
+    from_status,
+    to_status,
+    note,
+    created_at
+FROM application_audit_log
+WHERE application_id = 'YOUR_APPLICATION_ID'
+ORDER BY created_at;
+
+SELECT STATUS, COUNT(*)
+FROM APPLICATIONS
+GROUP BY STATUS;
+
+DELETE FROM APPLICATION_AUDIT_LOG
+WHERE APPLICATION_ID IN (
+    SELECT APPLICATION_ID
+    FROM APPLICATIONS
+    WHERE STATUS = 'DRAFT'
+);
+
+DELETE FROM APPLICATION_AUDIT_LOG
+WHERE APPLICATION_ID IN (
+    SELECT APPLICATION_ID
+    FROM APPLICATIONS
+    WHERE STATUS = 'DRAFT'
+);
+DELETE FROM DOCUMENTS
+WHERE APPLICATION_ID IN (
+    SELECT APPLICATION_ID
+    FROM APPLICATIONS
+    WHERE STATUS = 'DRAFT'
+);
+DELETE FROM APPLICATIONS
+WHERE STATUS = 'DRAFT';
+COMMIT;
+
+SELECT STATUS, COUNT(*)
+FROM APPLICATIONS
+GROUP BY STATUS;

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Investor Account Review Portal</title>
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div id="loginView" class="login-shell">
+    <div class="login-card">
+      <div class="brand-mark">IB</div>
+      <p class="eyebrow">Internal portal</p>
+      <h1>Investor Account Review</h1>
+      <p class="muted">Administrator access to submitted account-opening applications.</p>
+      <form id="loginForm">
+        <label>Username<input id="username" autocomplete="username" required></label>
+        <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
+        <button class="primary wide" type="submit">Sign in</button>
+        <p id="loginError" class="error hidden"></p>
+      </form>
+    </div>
+  </div>
+
+  <div id="appView" class="hidden">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Internal portal</p>
+        <h1>Investor Account Review</h1>
+      </div>
+      <div class="top-actions">
+        <span id="adminUser" class="user-pill"></span>
+        <button id="refreshBtn" class="ghost">Refresh</button>
+        <button id="logoutBtn" class="ghost danger-text">Sign out</button>
+      </div>
+    </header>
+
+    <main class="page">
+      <section id="stats" class="stats-grid"></section>
+
+      <section class="workspace">
+        <aside class="list-panel">
+          <div class="panel-header">
+            <div>
+              <h2>Applications</h2>
+              <p class="muted small">Monitor, open and review submissions.</p>
+            </div>
+          </div>
+          <div class="filters">
+            <input id="searchInput" placeholder="Search application, account title, TIN or email">
+            <select id="statusFilter">
+              <option value="ALL">All statuses</option>
+              <option value="SUBMITTED">Submitted</option>
+              <option value="REVIEWING">Reviewing</option>
+              <option value="ON_HOLD">On hold</option>
+              <option value="ACCEPTED">Accepted</option>
+              <option value="REJECTED">Rejected</option>
+              <option value="DRAFT">Draft</option>
+            </select>
+          </div>
+          <div id="applicationList" class="application-list"></div>
+          <div class="list-footer">
+            <button id="prevPage" class="ghost">Previous</button>
+            <span id="pageInfo" class="muted small"></span>
+            <button id="nextPage" class="ghost">Next</button>
+          </div>
+        </aside>
+
+        <section id="detailPanel" class="detail-panel empty-state">
+          <div>
+            <div class="empty-icon">↔</div>
+            <h2>Select an application</h2>
+            <p class="muted">Choose an application from the list to inspect the submitted information and documents.</p>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+</body>
+</html>
